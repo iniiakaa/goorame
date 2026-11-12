@@ -1,0 +1,15 @@
+# railway.toml
+# Konfigurasi deployment Railway untuk Goorame Mini-ERP
+# Dokumentasi: https://docs.railway.com/reference/config-as-code
+
+[services.backend]
+  source = "backend"
+  buildCommand = "pip install -r requirements.txt"
+  startCommand = "python run.py"
+  healthcheckPath = "/"
+
+[services.frontend]
+  source = "."
+  buildCommand = "npm install && npm run build"
+  startCommand = "npm start"
+  healthcheckPath = "/"
