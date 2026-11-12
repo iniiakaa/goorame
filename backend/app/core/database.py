@@ -4,9 +4,12 @@ from app.core.config import settings
 
 _db_url = settings.DATABASE_URL
 
-# Railway / Heroku sets postgres:// but SQLAlchemy 2.x requires postgresql://
-if _db_url.startswith("postgres://"):
-    _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+# Normalize any Postgres URL scheme (postgres://, postgresql://, postgresql+psycopg://)
+# to the psycopg2 driver, which is the one listed in requirements.txt.
+for _prefix in ("postgres://", "postgresql://", "postgresql+psycopg://"):
+    if _db_url.startswith(_prefix):
+        _db_url = "postgresql+psycopg2://" + _db_url[len(_prefix):]
+        break
 
 # SQLite needs check_same_thread=False; PostgreSQL does not use that arg
 _connect_args = {"check_same_thread": False} if "sqlite" in _db_url else {}
