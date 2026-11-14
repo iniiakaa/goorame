@@ -7,21 +7,39 @@ from app.models.expense import Expense, SupplierInvoice, SupplierPayment, CashTr
 from app.core.security import get_password_hash
 
 DEFAULT_COA = [
-    {"code": "1001", "name": "Kas di Tangan", "category": "ASET", "normal_balance": "DEBIT", "description": "Uang tunai operasional harian tambak"},
-    {"code": "1002", "name": "Bank BCA", "category": "ASET", "normal_balance": "DEBIT", "description": "Rekening penampungan penjualan partai besar"},
-    {"code": "1003", "name": "Bank BRI", "category": "ASET", "normal_balance": "DEBIT", "description": "Rekening pembayaran pakan & cadangan operasional"},
-    {"code": "1101", "name": "Piutang Usaha", "category": "ASET", "normal_balance": "DEBIT", "description": "Tagihan penjualan ikan tempo ke restoran/pasar"},
-    {"code": "1201", "name": "Persediaan Ikan Gurame (Biologis)", "category": "ASET", "normal_balance": "DEBIT", "description": "Nilai aset biologis ikan yang masih aktif di kolam"},
-    {"code": "1202", "name": "Persediaan Pakan & Suplemen", "category": "ASET", "normal_balance": "DEBIT", "description": "Stok pelet, vitamin, dan probiotik di gudang"},
-    {"code": "2001", "name": "Utang Usaha Pemasok", "category": "KEWAJIBAN", "normal_balance": "KREDIT", "description": "Kewajiban pembayaran pakan & bibit ke supplier"},
-    {"code": "3001", "name": "Modal Pemilik Budidaya", "category": "EKUITAS", "normal_balance": "KREDIT", "description": "Modal disetor awal pemilik usaha budidaya"},
-    {"code": "3002", "name": "Laba Ditahan", "category": "EKUITAS", "normal_balance": "KREDIT", "description": "Akumulasi laba bersih periode sebelumnya"},
-    {"code": "4001", "name": "Pendapatan Penjualan Gurame", "category": "PENDAPATAN", "normal_balance": "KREDIT", "description": "Hasil penjualan panen ikan konsumsi"},
-    {"code": "4002", "name": "Pendapatan Penjualan Bibit", "category": "PENDAPATAN", "normal_balance": "KREDIT", "description": "Hasil penjualan bibit gurame"},
-    {"code": "5001", "name": "Beban Pakan Ikan", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Biaya pelet apung & pakan alternatif"},
-    {"code": "5002", "name": "Beban Gaji/Upah Pekerja", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Upah harian & bulanan petugas kolam"},
-    {"code": "5003", "name": "Beban Obat & Suplemen", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Biaya probiotik, vitamin, dan garam pencegah jamur"},
-    {"code": "5004", "name": "Beban Operasional Kolam (Listrik/Air)", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Biaya listrik pompa, aerator, dan perawatan kolam"},
+    # 1000 - ASET LANCAR
+    {"code": "1110", "name": "Kas di Bank (BCA)", "category": "ASET", "normal_balance": "DEBIT", "description": "Rekening operasional penerimaan & pengeluaran utama"},
+    {"code": "1120", "name": "Kas di Bank (BRI)", "category": "ASET", "normal_balance": "DEBIT", "description": "Rekening cadangan & belanja pakan skala besar"},
+    {"code": "1130", "name": "Kas di Tangan (Kas Kecil)", "category": "ASET", "normal_balance": "DEBIT", "description": "Uang tunai operasional harian di lokasi kolam"},
+    {"code": "1140", "name": "Piutang Usaha", "category": "ASET", "normal_balance": "DEBIT", "description": "Tagihan penjualan ikan ke restoran/pengepul"},
+    {"code": "1150", "name": "Persediaan Benih Gurame", "category": "ASET", "normal_balance": "DEBIT", "description": "Stok bibit/benih sebelum ditebar ke kolam pembesaran"},
+    {"code": "1160", "name": "Persediaan Pakan Ikan", "category": "ASET", "normal_balance": "DEBIT", "description": "Stok pelet & pakan di gudang"},
+    {"code": "1170", "name": "Persediaan Obat, Vitamin & Garam", "category": "ASET", "normal_balance": "DEBIT", "description": "Stok obat, suplemen, dan probiotik kolam"},
+    {"code": "1180", "name": "Persediaan Ikan dalam Pembesaran (Aset Biologis)", "category": "ASET", "normal_balance": "DEBIT", "description": "Akumulasi nilai benih, pakan, dan perawatan ikan di kolam"},
+
+    # 2000 - KEWAJIBAN
+    {"code": "2110", "name": "Utang Usaha Pemasok", "category": "KEWAJIBAN", "normal_balance": "KREDIT", "description": "Kewajiban pembelian pakan/benih/obat secara kredit"},
+    {"code": "2120", "name": "Beban yang Masih Harus Dibayar", "category": "KEWAJIBAN", "normal_balance": "KREDIT", "description": "Kewajiban gaji/listrik yang belum dibayarkan"},
+
+    # 3000 - EKUITAS
+    {"code": "3100", "name": "Modal Pemilik Budidaya", "category": "EKUITAS", "normal_balance": "KREDIT", "description": "Modal disetor awal pemilik usaha tambak"},
+    {"code": "3200", "name": "Laba Ditahan", "category": "EKUITAS", "normal_balance": "KREDIT", "description": "Akumulasi saldo laba/rugi periode lalu"},
+    {"code": "3300", "name": "Prive Pemilik", "category": "EKUITAS", "normal_balance": "DEBIT", "description": "Penarikan modal untuk keperluan pribadi pemilik"},
+
+    # 4000 - PENDAPATAN
+    {"code": "4110", "name": "Penjualan Ikan Gurame Konsumsi", "category": "PENDAPATAN", "normal_balance": "KREDIT", "description": "Pendapatan panen ikan konsumsi"},
+    {"code": "4120", "name": "Penjualan Benih Gurame", "category": "PENDAPATAN", "normal_balance": "KREDIT", "description": "Pendapatan penjualan bibit/benih pendederan"},
+
+    # 5000 - HARGA POKOK PENJUALAN
+    {"code": "5110", "name": "Harga Pokok Penjualan (HPP) Ikan", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Beban pokok ikan yang telah dipanen dan terjual"},
+    {"code": "5120", "name": "Kerugian Ikan Mati (Mortalitas)", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Beban kerugian atas mortalitas ikan di kolam"},
+
+    # 6000 - BEBAN OPERASIONAL
+    {"code": "6110", "name": "Beban Gaji & Upah Tenaga Kerja", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Upah pekerja kolam harian dan bulanan"},
+    {"code": "6120", "name": "Beban Listrik, Aerator & Pompa Air", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Tagihan listrik aerator & pompa pengairan kolam"},
+    {"code": "6130", "name": "Beban Bahan Bakar & Transportasi", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Bensin/solar genset dan angkut pakan/ikan"},
+    {"code": "6140", "name": "Beban Pemeliharaan Kolam & Peralatan", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Perawatan terpal, jaring, pompa, dan paralon"},
+    {"code": "6190", "name": "Beban Operasional Lain-lain", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Pengeluaran operasional umum lainnya"},
 ]
 
 def seed_database(db: Session):
@@ -36,9 +54,9 @@ def seed_database(db: Session):
     # 2. Seed Cash Accounts
     if db.query(CashAccount).count() == 0:
         cash_accounts = [
-            CashAccount(id="cash-1", code="1001", name="Kas di Tangan (Bendahara Kolam)", type="KAS", account_number="KAS-TUNAI-01", balance=14750000.0),
-            CashAccount(id="cash-2", code="1002", name="Bank BCA Operasional", type="BANK", account_number="8820-192-331", balance=82500000.0),
-            CashAccount(id="cash-3", code="1003", name="Bank BRI Rekening Cadangan", type="BANK", account_number="0192-883-712", balance=45000000.0),
+            CashAccount(id="cash-1", code="1110", name="Bank BCA Operasional", type="BANK", account_number="8820-192-331", balance=82500000.0),
+            CashAccount(id="cash-2", code="1120", name="Bank BRI Rekening Cadangan", type="BANK", account_number="0192-883-712", balance=45000000.0),
+            CashAccount(id="cash-3", code="1130", name="Kas di Tangan (Kas Kecil)", type="KAS", account_number="KAS-TUNAI-01", balance=14750000.0),
         ]
         db.add_all(cash_accounts)
         db.commit()
@@ -49,13 +67,13 @@ def seed_database(db: Session):
             User(
                 username="pemilik",
                 password_hash=get_password_hash("admin123"),
-                full_name="H. Slamet (Pemilik Tambak)",
+                full_name="Pemilik",
                 role="PEMILIK",
             ),
             User(
                 username="pekerja",
                 password_hash=get_password_hash("pekerja123"),
-                full_name="Pak Budi (Pekerja Kolam)",
+                full_name="Pekerja",
                 role="PEKERJA",
             ),
         ]
@@ -201,7 +219,7 @@ def seed_database(db: Session):
                 payment_status="LUNAS",
                 due_date=None,
                 paid_date="2026-11-01",
-                cash_account_id="cash-2",
+                cash_account_id="cash-1",
                 cash_account_name="Bank BCA Operasional",
                 note="Ikan gurame ukuran konsumsi 7-8 ons, pengiriman subuh via pikap tambak",
             ),
@@ -235,8 +253,8 @@ def seed_database(db: Session):
                 payment_status="LUNAS",
                 due_date=None,
                 paid_date="2026-11-08",
-                cash_account_id="cash-1",
-                cash_account_name="Kas di Tangan (Bendahara Kolam)",
+                cash_account_id="cash-3",
+                cash_account_name="Kas di Tangan (Kas Kecil)",
                 note="Grade A gurame hidup segar, pembayaran tunai langsung di kasir tambak",
             ),
         ]
@@ -252,7 +270,7 @@ def seed_database(db: Session):
                 date="2026-11-02",
                 category="PAKAN",
                 nominal=7500000.0,
-                cash_account_id="cash-2",
+                cash_account_id="cash-1",
                 cash_account_name="Bank BCA Operasional",
                 note="Beli pakan apung protein 32% (25 sak @ Rp 300.000)",
             ),
@@ -262,8 +280,8 @@ def seed_database(db: Session):
                 date="2026-11-04",
                 category="GAJI",
                 nominal=3500000.0,
-                cash_account_id="cash-1",
-                cash_account_name="Kas di Tangan (Bendahara Kolam)",
+                cash_account_id="cash-3",
+                cash_account_name="Kas di Tangan (Kas Kecil)",
                 note="Gaji mingguan 2 petugas rawat kolam & sift malam",
             ),
             Expense(
@@ -272,8 +290,8 @@ def seed_database(db: Session):
                 date="2026-11-06",
                 category="OBAT",
                 nominal=850000.0,
-                cash_account_id="cash-1",
-                cash_account_name="Kas di Tangan (Bendahara Kolam)",
+                cash_account_id="cash-3",
+                cash_account_name="Kas di Tangan (Kas Kecil)",
                 note="Probiotik EM4 perikanan 5 botol + 2 karung garam krosok",
             ),
             Expense(
@@ -282,7 +300,7 @@ def seed_database(db: Session):
                 date="2026-11-07",
                 category="OPERASIONAL",
                 nominal=1650000.0,
-                cash_account_id="cash-2",
+                cash_account_id="cash-1",
                 cash_account_name="Bank BCA Operasional",
                 note="Tagihan listrik aerator & kincir air tambak PLN November",
             ),
@@ -330,7 +348,7 @@ def seed_database(db: Session):
                 invoice_id="inv-1",
                 date="2026-11-03",
                 amount=12000000.0,
-                cash_account_id="cash-2",
+                cash_account_id="cash-1",
                 cash_account_name="Bank BCA Operasional",
                 note="Pembayaran uang muka DP faktur pakan INV-SUP-2026-089",
             ),
@@ -345,10 +363,10 @@ def seed_database(db: Session):
                 id="trf-1",
                 transfer_no="TRF-202611-01",
                 date="2026-11-02",
-                from_account_id="cash-2",
+                from_account_id="cash-1",
                 from_account_name="Bank BCA Operasional",
-                to_account_id="cash-1",
-                to_account_name="Kas di Tangan (Bendahara Kolam)",
+                to_account_id="cash-3",
+                to_account_name="Kas di Tangan (Kas Kecil)",
                 amount=5000000.0,
                 note="Tarik tunai untuk kas kecil & belanja operasional tambak",
             ),
@@ -367,11 +385,11 @@ def seed_database(db: Session):
                 "ref_type": "MANUAL",
                 "ref_id": None,
                 "items": [
-                    {"account_code": "1001", "account_name": "Kas di Tangan", "debit": 12400000.0, "credit": 0.0},
-                    {"account_code": "1002", "account_name": "Bank BCA", "debit": 95350000.0, "credit": 0.0},
-                    {"account_code": "1003", "account_name": "Bank BRI", "debit": 45000000.0, "credit": 0.0},
-                    {"account_code": "1201", "account_name": "Persediaan Ikan Gurame (Biologis)", "debit": 45000000.0, "credit": 0.0},
-                    {"account_code": "3001", "account_name": "Modal Pemilik Budidaya", "debit": 0.0, "credit": 197750000.0},
+                    {"account_code": "1110", "account_name": "Kas di Bank (BCA)", "debit": 95350000.0, "credit": 0.0},
+                    {"account_code": "1120", "account_name": "Kas di Bank (BRI)", "debit": 45000000.0, "credit": 0.0},
+                    {"account_code": "1130", "account_name": "Kas di Tangan (Kas Kecil)", "debit": 12400000.0, "credit": 0.0},
+                    {"account_code": "1180", "account_name": "Persediaan Ikan dalam Pembesaran (Aset Biologis)", "debit": 45000000.0, "credit": 0.0},
+                    {"account_code": "3100", "account_name": "Modal Pemilik Budidaya", "debit": 0.0, "credit": 197750000.0},
                 ],
             },
             {
@@ -382,8 +400,8 @@ def seed_database(db: Session):
                 "ref_type": "PENJUALAN",
                 "ref_id": "sale-1",
                 "items": [
-                    {"account_code": "1002", "account_name": "Bank BCA", "debit": 11000000.0, "credit": 0.0},
-                    {"account_code": "4001", "account_name": "Pendapatan Penjualan Gurame", "debit": 0.0, "credit": 11000000.0},
+                    {"account_code": "1110", "account_name": "Kas di Bank (BCA)", "debit": 11000000.0, "credit": 0.0},
+                    {"account_code": "4110", "account_name": "Penjualan Ikan Gurame Konsumsi", "debit": 0.0, "credit": 11000000.0},
                 ],
             },
             {
@@ -394,8 +412,8 @@ def seed_database(db: Session):
                 "ref_type": "BEBAN",
                 "ref_id": "exp-1",
                 "items": [
-                    {"account_code": "5001", "account_name": "Beban Pakan Ikan", "debit": 7500000.0, "credit": 0.0},
-                    {"account_code": "1002", "account_name": "Bank BCA", "debit": 0.0, "credit": 7500000.0},
+                    {"account_code": "1160", "account_name": "Persediaan Pakan Ikan", "debit": 7500000.0, "credit": 0.0},
+                    {"account_code": "1110", "account_name": "Kas di Bank (BCA)", "debit": 0.0, "credit": 7500000.0},
                 ],
             },
             {
@@ -406,8 +424,8 @@ def seed_database(db: Session):
                 "ref_type": "MUTASI_KAS",
                 "ref_id": "trf-1",
                 "items": [
-                    {"account_code": "1001", "account_name": "Kas di Tangan", "debit": 5000000.0, "credit": 0.0},
-                    {"account_code": "1002", "account_name": "Bank BCA", "debit": 0.0, "credit": 5000000.0},
+                    {"account_code": "1130", "account_name": "Kas di Tangan (Kas Kecil)", "debit": 5000000.0, "credit": 0.0},
+                    {"account_code": "1110", "account_name": "Kas di Bank (BCA)", "debit": 0.0, "credit": 5000000.0},
                 ],
             },
             {
@@ -418,8 +436,8 @@ def seed_database(db: Session):
                 "ref_type": "UTANG",
                 "ref_id": "inv-1",
                 "items": [
-                    {"account_code": "5001", "account_name": "Beban Pakan Ikan", "debit": 18000000.0, "credit": 0.0},
-                    {"account_code": "2001", "account_name": "Utang Usaha Pemasok", "debit": 0.0, "credit": 18000000.0},
+                    {"account_code": "1160", "account_name": "Persediaan Pakan Ikan", "debit": 18000000.0, "credit": 0.0},
+                    {"account_code": "2110", "account_name": "Utang Usaha Pemasok", "debit": 0.0, "credit": 18000000.0},
                 ],
             },
             {
@@ -430,8 +448,8 @@ def seed_database(db: Session):
                 "ref_type": "UTANG",
                 "ref_id": "pay-1",
                 "items": [
-                    {"account_code": "2001", "account_name": "Utang Usaha Pemasok", "debit": 12000000.0, "credit": 0.0},
-                    {"account_code": "1002", "account_name": "Bank BCA", "debit": 0.0, "credit": 12000000.0},
+                    {"account_code": "2110", "account_name": "Utang Usaha Pemasok", "debit": 12000000.0, "credit": 0.0},
+                    {"account_code": "1110", "account_name": "Kas di Bank (BCA)", "debit": 0.0, "credit": 12000000.0},
                 ],
             },
             {
@@ -442,8 +460,8 @@ def seed_database(db: Session):
                 "ref_type": "BEBAN",
                 "ref_id": "exp-2",
                 "items": [
-                    {"account_code": "5002", "account_name": "Beban Gaji/Upah Pekerja", "debit": 3500000.0, "credit": 0.0},
-                    {"account_code": "1001", "account_name": "Kas di Tangan", "debit": 0.0, "credit": 3500000.0},
+                    {"account_code": "6110", "account_name": "Beban Gaji & Upah Tenaga Kerja", "debit": 3500000.0, "credit": 0.0},
+                    {"account_code": "1130", "account_name": "Kas di Tangan (Kas Kecil)", "debit": 0.0, "credit": 3500000.0},
                 ],
             },
             {
@@ -454,8 +472,8 @@ def seed_database(db: Session):
                 "ref_type": "PENJUALAN",
                 "ref_id": "sale-2",
                 "items": [
-                    {"account_code": "1101", "account_name": "Piutang Usaha", "debit": 10200000.0, "credit": 0.0},
-                    {"account_code": "4001", "account_name": "Pendapatan Penjualan Gurame", "debit": 0.0, "credit": 10200000.0},
+                    {"account_code": "1140", "account_name": "Piutang Usaha", "debit": 10200000.0, "credit": 0.0},
+                    {"account_code": "4110", "account_name": "Penjualan Ikan Gurame Konsumsi", "debit": 0.0, "credit": 10200000.0},
                 ],
             },
             {
@@ -466,8 +484,8 @@ def seed_database(db: Session):
                 "ref_type": "BEBAN",
                 "ref_id": "exp-3",
                 "items": [
-                    {"account_code": "5003", "account_name": "Beban Obat & Suplemen", "debit": 850000.0, "credit": 0.0},
-                    {"account_code": "1001", "account_name": "Kas di Tangan", "debit": 0.0, "credit": 850000.0},
+                    {"account_code": "1170", "account_name": "Persediaan Obat, Vitamin & Garam", "debit": 850000.0, "credit": 0.0},
+                    {"account_code": "1130", "account_name": "Kas di Tangan (Kas Kecil)", "debit": 0.0, "credit": 850000.0},
                 ],
             },
             {
@@ -478,8 +496,8 @@ def seed_database(db: Session):
                 "ref_type": "BEBAN",
                 "ref_id": "exp-4",
                 "items": [
-                    {"account_code": "5004", "account_name": "Beban Operasional Kolam (Listrik/Air)", "debit": 1650000.0, "credit": 0.0},
-                    {"account_code": "1002", "account_name": "Bank BCA", "debit": 0.0, "credit": 1650000.0},
+                    {"account_code": "6120", "account_name": "Beban Listrik, Aerator & Pompa Air", "debit": 1650000.0, "credit": 0.0},
+                    {"account_code": "1110", "account_name": "Kas di Bank (BCA)", "debit": 0.0, "credit": 1650000.0},
                 ],
             },
             {
@@ -490,8 +508,8 @@ def seed_database(db: Session):
                 "ref_type": "PENJUALAN",
                 "ref_id": "sale-3",
                 "items": [
-                    {"account_code": "1001", "account_name": "Kas di Tangan", "debit": 7200000.0, "credit": 0.0},
-                    {"account_code": "4001", "account_name": "Pendapatan Penjualan Gurame", "debit": 0.0, "credit": 7200000.0},
+                    {"account_code": "1130", "account_name": "Kas di Tangan (Kas Kecil)", "debit": 7200000.0, "credit": 0.0},
+                    {"account_code": "4110", "account_name": "Penjualan Ikan Gurame Konsumsi", "debit": 0.0, "credit": 7200000.0},
                 ],
             },
         ]

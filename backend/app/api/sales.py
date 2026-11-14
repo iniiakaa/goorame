@@ -59,7 +59,7 @@ def create_sale(payload: SaleCreate, db: Session = Depends(get_db)):
             ref_id=invoice_no,
             items=[
                 JournalItemSchema(account_code=cash_acc.code, account_name=cash_acc.name, debit=total_amount, credit=0.0),
-                JournalItemSchema(account_code="4001", account_name="Pendapatan Penjualan Ikan Gurame", debit=0.0, credit=total_amount),
+                JournalItemSchema(account_code="4110", account_name="Penjualan Ikan Gurame Konsumsi", debit=0.0, credit=total_amount),
             ],
         )
     else:
@@ -71,8 +71,8 @@ def create_sale(payload: SaleCreate, db: Session = Depends(get_db)):
             ref_type="PENJUALAN",
             ref_id=invoice_no,
             items=[
-                JournalItemSchema(account_code="1101", account_name="Piutang Usaha", debit=total_amount, credit=0.0),
-                JournalItemSchema(account_code="4001", account_name="Pendapatan Penjualan Ikan Gurame", debit=0.0, credit=total_amount),
+                JournalItemSchema(account_code="1140", account_name="Piutang Usaha", debit=total_amount, credit=0.0),
+                JournalItemSchema(account_code="4110", account_name="Penjualan Ikan Gurame Konsumsi", debit=0.0, credit=total_amount),
             ],
         )
 
@@ -128,7 +128,7 @@ def pay_receivable(sale_id: str, payload: PayReceivableRequest, db: Session = De
         ref_id=sale.invoice_no,
         items=[
             JournalItemSchema(account_code=cash_acc.code, account_name=cash_acc.name, debit=sale.total_amount, credit=0.0),
-            JournalItemSchema(account_code="1101", account_name="Piutang Usaha", debit=0.0, credit=sale.total_amount),
+            JournalItemSchema(account_code="1140", account_name="Piutang Usaha", debit=0.0, credit=sale.total_amount),
         ],
     )
 

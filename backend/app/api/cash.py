@@ -17,9 +17,9 @@ def get_all_cash_accounts(db: Session = Depends(get_db)):
 
 @router.post("", response_model=CashAccountResponse)
 def create_cash_account(payload: CashAccountCreate, db: Session = Depends(get_db)):
-    # Generate sequential COA code for asset (1004, 1005, etc.)
+    # Generate sequential COA code for asset (1131, 1132, etc.)
     count = db.query(CashAccount).count()
-    code = f"10{str(count + 1).zfill(2)}"
+    code = f"11{str(count + 1).zfill(2)}"
 
     # Also register in Chart of Accounts
     coa = ChartOfAccount(

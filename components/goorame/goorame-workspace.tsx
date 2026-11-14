@@ -285,13 +285,20 @@ function GoorameInnerWorkspace({
                 setActiveTab("dashboard");
               }}
             >
-              <span className="gw-brand-icon">
-                <Fish size={18} strokeWidth={2} aria-hidden="true" />
-              </span>
+              <div className="w-9 h-9 shrink-0 flex items-center justify-center">
+                <img
+                  src="/logo-goorame.png"
+                  alt="Goorame Logo"
+                  className="w-full h-full object-contain filter drop-shadow-sm"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/logo%20goorame.png";
+                  }}
+                />
+              </div>
               <div>
-                <strong className="text-sm font-bold tracking-tight">{brand}</strong>
+                <strong className="text-sm font-bold tracking-tight text-[var(--gw-ink)]">{brand}</strong>
                 <span className="hidden sm:inline-block text-[11px] text-[var(--gw-muted)] ml-2">
-                  Mini-ERP Budidaya & Akuntansi
+                  Mini-ERP Budidaya Gurame & Akuntansi Terintegrasi
                 </span>
               </div>
             </a>
@@ -322,33 +329,24 @@ function GoorameInnerWorkspace({
           <div className="gw-toolbar">
             {currentUser ? (
               <>
-                {/* RBAC Role Switcher Pill */}
-                <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--gw-surface)] border border-[var(--gw-line)] text-xs">
-                  <span className="text-[10px] uppercase font-bold text-[var(--gw-muted)] px-1.5 flex items-center gap-1">
-                    <ShieldCheck size={12} className="text-[var(--gw-accent)]" /> Role:
+                {/* Role Indicator Pill (Synced strictly from session) */}
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--gw-surface)] border border-[var(--gw-line)] text-xs"
+                  title={`Login sebagai ${currentUser.role}. Untuk berganti role, silakan logout terlebih dahulu.`}
+                >
+                  <ShieldCheck size={14} className={role === "PEMILIK" ? "text-amber-400" : "text-cyan-400"} />
+                  <span className="text-[10px] uppercase font-bold text-[var(--gw-muted)]">
+                    Role:
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setRole("PEMILIK")}
-                    className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
                       role === "PEMILIK"
-                        ? "bg-[var(--gw-ink)] text-[var(--gw-button-ink)] shadow-sm"
-                        : "text-[var(--gw-muted)] hover:text-[var(--gw-ink)]"
+                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                        : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
                     }`}
                   >
-                    Pemilik
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole("PEKERJA")}
-                    className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
-                      role === "PEKERJA"
-                        ? "bg-[var(--gw-ink)] text-[var(--gw-button-ink)] shadow-sm"
-                        : "text-[var(--gw-muted)] hover:text-[var(--gw-ink)]"
-                    }`}
-                  >
-                    Pekerja
-                  </button>
+                    {role === "PEMILIK" ? "Pemilik" : "Pekerja"}
+                  </span>
                 </div>
 
                 {/* Adjust Glass Button */}

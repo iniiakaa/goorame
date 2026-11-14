@@ -18,10 +18,10 @@ from app.services.accounting_service import create_double_entry_journal
 router = APIRouter(prefix="/expenses", tags=["Beban & Utang Usaha"])
 
 EXPENSE_COA_MAP = {
-    "PAKAN": ("5001", "Beban Pakan Ikan"),
-    "GAJI": ("5002", "Beban Gaji & Upah Tenaga Kerja"),
-    "OBAT": ("5003", "Beban Obat, Probiotik & Garam Ikan"),
-    "OPERASIONAL": ("5004", "Beban Operasional Kolam (Listrik/Air)"),
+    "PAKAN": ("1160", "Persediaan Pakan Ikan"),
+    "GAJI": ("6110", "Beban Gaji & Upah Tenaga Kerja"),
+    "OBAT": ("1170", "Persediaan Obat, Vitamin & Garam"),
+    "OPERASIONAL": ("6120", "Beban Listrik, Aerator & Pompa Air"),
 }
 
 @router.get("", response_model=list[ExpenseResponse])
@@ -99,10 +99,20 @@ def create_supplier_invoice(payload: SupplierInvoiceCreate, db: Session = Depend
     db.add(invoice)
 
     # Map category to debit account
-    debit_code = "5001" if payload.item_category == "Pakan" else "1201" if payload.item_category == "Bibit" else "5004"
-    debit_name = "Beban Pakan Ikan" if debit_code == "5001" else "Persediaan Ikan Gurame (Biologis)" if debit_code == "1201" else "Beban Operasional Kolam"
+    if payload.item_category == "Pakan":
+        debit_code = "1160"
+        debit_name = "Persediaan Pakan Ikan"
+    elif payload.item_category == "Bibit":
+        debit_code = "1150"
+        debit_name = "Persediaan Benih Gurame"
+    elif payload.item_category == "Obat / Suplemen":
+        debit_code = "1170"
+        debit_name = "Persediaan Obat, Vitamin & Garam"
+    else:
+        debit_code = "6190"
+        debit_name = "Beban Operasional Lain-lain"
 
-    # Auto Journal: Debit Beban/Persediaan, Credit Utang Usaha (2001)
+    # Auto Journal: Debit Persediaan/Beban, Credit Utang Usaha (2110)
     create_double_entry_journal(
         db=db,
         date=date_str,
@@ -111,7 +121,7 @@ def create_supplier_invoice(payload: SupplierInvoiceCreate, db: Session = Depend
         ref_id=invoice_number,
         items=[
             JournalItemSchema(account_code=debit_code, account_name=debit_name, debit=payload.total_amount, credit=0.0),
-            JournalItemSchema(account_code="2001", account_name="Utang Usaha", debit=0.0, credit=payload.total_amount),
+            JournalItemSchema(account_code="2110", account_name="Utang Usaha Pemasok", debit=0.0, credit=payload.total_amount),
         ],
     )
 
@@ -154,7 +164,7 @@ def pay_supplier_invoice(payload: SupplierPaymentCreate, db: Session = Depends(g
     # 2. Deduct Cash Balance
     cash_acc.balance -= payload.amount
 
-    # 3. Auto Journal: Debit Utang Usaha (2001), Credit Kas/Bank
+    # 3. Auto Journal: Debit Utang Usaha (2110), Credit Kas/Bank
     create_double_entry_journal(
         db=db,
         date=date_str,
@@ -162,7 +172,7 @@ def pay_supplier_invoice(payload: SupplierPaymentCreate, db: Session = Depends(g
         ref_type="UTANG",
         ref_id=payment_no,
         items=[
-            JournalItemSchema(account_code="2001", account_name="Utang Usaha", debit=payload.amount, credit=0.0),
+            JournalItemSchema(account_code="2110", account_name="Utang Usaha Pemasok", debit=payload.amount, credit=0.0),
             JournalItemSchema(account_code=cash_acc.code, account_name=cash_acc.name, debit=0.0, credit=payload.amount),
         ],
     )

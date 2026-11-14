@@ -11,6 +11,19 @@ class COAResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class COACreate(BaseModel):
+    code: str
+    name: str
+    category: str  # ASET | KEWAJIBAN | EKUITAS | PENDAPATAN | BEBAN
+    normal_balance: str  # DEBIT | KREDIT
+    description: Optional[str] = None
+
+class COAUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    normal_balance: Optional[str] = None
+    description: Optional[str] = None
+
 class CashAccountCreate(BaseModel):
     name: str
     type: str  # KAS | BANK

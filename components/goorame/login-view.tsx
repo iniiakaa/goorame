@@ -37,7 +37,7 @@ export function LoginView({ onOpenSettings }: LoginViewProps) {
       setUsername("pemilik");
       setPassword("admin123");
     } else {
-      setUsername("pekerja_kolam");
+      setUsername("pekerja");
       setPassword("pekerja123");
     }
   };
@@ -63,7 +63,11 @@ export function LoginView({ onOpenSettings }: LoginViewProps) {
   const handleQuickLogin = (role: UserRole) => {
     setIsLoading(true);
     setTimeout(() => {
-      login(role === "PEMILIK" ? "H. Slamet (Pemilik)" : "Pak Budi (Pekerja Kolam)", "demo", role);
+      login(
+        role === "PEMILIK" ? "pemilik" : "pekerja",
+        role === "PEMILIK" ? "admin123" : "pekerja123",
+        role
+      );
     }, 200);
   };
 
@@ -79,18 +83,19 @@ export function LoginView({ onOpenSettings }: LoginViewProps) {
 
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/15 border border-white/25 shadow-inner mb-3 text-white">
-            <Fish size={28} className="animate-pulse" />
+          <div className="inline-flex items-center justify-center w-36 h-36 mb-2">
+            <img
+              src="/logo-goorame.png"
+              alt="Logo Goorame"
+              className="w-full h-full object-contain filter drop-shadow-lg"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/logo%20goorame.png";
+              }}
+            />
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-semibold text-white/90 tracking-wide uppercase mb-2">
-            <Sparkles size={12} /> Goorame Mini-ERP
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            Masuk ke Sistem
+          <h1 className="text-xl font-bold text-white tracking-tight">
+            Goorame Mini-ERP
           </h1>
-          <p className="text-xs text-white/75 mt-1 max-w-sm mx-auto">
-            Manajemen Budidaya Gurame & Pembukuan Akuntansi Terintegrasi
-          </p>
         </div>
 
         {/* Role Segmented Selector */}
@@ -247,26 +252,20 @@ export function LoginView({ onOpenSettings }: LoginViewProps) {
             type="button"
             onClick={() => handleQuickLogin("PEMILIK")}
             disabled={isLoading}
-            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-medium flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
+            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <ShieldCheck size={15} className="text-emerald-400" />
-            <div className="text-left">
-              <div className="font-semibold leading-tight">Pemilik</div>
-              <div className="text-[9px] text-white/60">H. Slamet</div>
-            </div>
+            <ShieldCheck size={16} className="text-emerald-400" />
+            <span>Pemilik</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleQuickLogin("PEKERJA")}
             disabled={isLoading}
-            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-medium flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
+            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <User size={15} className="text-sky-400" />
-            <div className="text-left">
-              <div className="font-semibold leading-tight">Pekerja</div>
-              <div className="text-[9px] text-white/60">Pak Budi</div>
-            </div>
+            <User size={16} className="text-sky-400" />
+            <span>Pekerja</span>
           </button>
         </div>
 

@@ -383,6 +383,40 @@ export const api = {
     return await request<ChartOfAccount[]>("/accounting/coa");
   },
 
+  createChartOfAccount: async (body: {
+    code: string;
+    name: string;
+    category: string;
+    normalBalance: string;
+    description?: string;
+  }): Promise<ChartOfAccount> => {
+    return await request<ChartOfAccount>("/accounting/coa", {
+      method: "POST",
+      body: JSON.stringify({
+        code: body.code,
+        name: body.name,
+        category: body.category,
+        normal_balance: body.normalBalance,
+        description: body.description,
+      }),
+    });
+  },
+
+  updateChartOfAccount: async (
+    code: string,
+    body: { name?: string; category?: string; normalBalance?: string; description?: string }
+  ): Promise<ChartOfAccount> => {
+    return await request<ChartOfAccount>(`/accounting/coa/${code}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        name: body.name,
+        category: body.category,
+        normal_balance: body.normalBalance,
+        description: body.description,
+      }),
+    });
+  },
+
   getJournals: async (): Promise<JournalEntry[]> => {
     const data = await request<any[]>("/accounting/journals");
     return data.map(mapJournalFromApi);

@@ -145,6 +145,14 @@ interface GoorameContextType {
     accountNumber?: string;
     initialBalance: number;
   }) => boolean;
+
+  addChartOfAccount: (data: {
+    code: string;
+    name: string;
+    category: "ASET" | "KEWAJIBAN" | "EKUITAS" | "PENDAPATAN" | "BEBAN";
+    normalBalance: "DEBIT" | "KREDIT";
+    description?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
 }
 
 const GoorameContext = createContext<GoorameContextType | null>(null);
@@ -182,7 +190,7 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
       const updatedUser: AuthUser = {
         ...currentUser,
         role: newRole,
-        name: newRole === "PEMILIK" ? "H. Slamet (Pemilik)" : "Pak Budi (Pekerja Kolam)",
+        name: newRole === "PEMILIK" ? "Pemilik" : "Pekerja",
         avatarLetter: newRole === "PEMILIK" ? "P" : "K",
       };
       setCurrentUser(updatedUser);
@@ -227,7 +235,7 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
         // Fallback: local login if backend is offline
         const lower = trimmed.toLowerCase();
         let userRole: UserRole = roleOverride || "PEMILIK";
-        let displayName = "H. Slamet (Pemilik)";
+        let displayName = userRole === "PEMILIK" ? "Pemilik" : "Pekerja";
 
         if (
           roleOverride === "PEKERJA" ||
@@ -236,7 +244,10 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
           lower.includes("budi")
         ) {
           userRole = "PEKERJA";
-          displayName = "Pak Budi (Pekerja Kolam)";
+          displayName = "Pekerja";
+        } else {
+          userRole = "PEMILIK";
+          displayName = "Pemilik";
         }
 
         const user: AuthUser = {
@@ -456,8 +467,8 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
 
     // Auto Journal Entry (Double-entry)
     const journalId = `JU-${date.replace(/-/g, "").slice(0, 6)}-${String(journalEntries.length + 1).padStart(3, "0")}`;
-    const debitAccountCode = paymentStatus === "LUNAS" ? (cashAcc?.code || "1001") : "1101";
-    const debitAccountName = paymentStatus === "LUNAS" ? (cashAcc?.name || "Kas di Tangan") : "Piutang Usaha";
+    const debitAccountCode = paymentStatus === "LUNAS" ? (cashAcc?.code || "1110") : "1140";
+    const debitAccountName = paymentStatus === "LUNAS" ? (cashAcc?.name || "Kas di Bank (BCA)") : "Piutang Usaha";
 
     const newJournal: JournalEntry = {
       id: `j-${Date.now()}`,
@@ -474,8 +485,8 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
           credit: 0,
         },
         {
-          accountCode: "4001",
-          accountName: "Pendapatan Penjualan Gurame",
+          accountCode: "4110",
+          accountName: "Penjualan Ikan Gurame Konsumsi",
           debit: 0,
           credit: totalAmount,
         },
@@ -573,17 +584,17 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
     }).then(() => loadDataFromDatabase()).catch((err) => console.warn("Backend sync error:", err));
 
     // Map Category to COA
-    let expenseCode = "5004";
-    let expenseName = "Beban Operasional Kolam (Listrik/Air)";
+    let expenseCode = "6120";
+    let expenseName = "Beban Listrik, Aerator & Pompa Air";
     if (category === "PAKAN") {
-      expenseCode = "5001";
-      expenseName = "Beban Pakan Ikan";
+      expenseCode = "1160";
+      expenseName = "Persediaan Pakan Ikan";
     } else if (category === "GAJI") {
-      expenseCode = "5002";
-      expenseName = "Beban Gaji/Upah Pekerja";
+      expenseCode = "6110";
+      expenseName = "Beban Gaji & Upah Tenaga Kerja";
     } else if (category === "OBAT") {
-      expenseCode = "5003";
-      expenseName = "Beban Obat & Suplemen";
+      expenseCode = "1170";
+      expenseName = "Persediaan Obat, Vitamin & Garam";
     }
 
     // Auto Journal Entry
@@ -603,8 +614,8 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
           credit: 0,
         },
         {
-          accountCode: cashAcc?.code || "1001",
-          accountName: cashAcc?.name || "Kas di Tangan",
+          accountCode: cashAcc?.code || "1110",
+          accountName: cashAcc?.name || "Kas di Bank (BCA)",
           debit: 0,
           credit: nominal,
         },
@@ -743,13 +754,18 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
     setSupplierInvoices((prev) => [newInvoice, ...prev]);
 
     // Map Category to Debit Account
-    const debitAccountCode = itemCategory === "Pakan" ? "5001" : itemCategory === "Bibit" ? "1201" : "5004";
-    const debitAccountName =
-      itemCategory === "Pakan"
-        ? "Beban Pakan Ikan"
-        : itemCategory === "Bibit"
-          ? "Persediaan Ikan Gurame (Biologis)"
-          : "Beban Operasional Kolam (Listrik/Air)";
+    let debitAccountCode = "6190";
+    let debitAccountName = "Beban Operasional Lain-lain";
+    if (itemCategory === "Pakan") {
+      debitAccountCode = "1160";
+      debitAccountName = "Persediaan Pakan Ikan";
+    } else if (itemCategory === "Bibit") {
+      debitAccountCode = "1150";
+      debitAccountName = "Persediaan Benih Gurame";
+    } else if (itemCategory === "Obat / Suplemen") {
+      debitAccountCode = "1170";
+      debitAccountName = "Persediaan Obat, Vitamin & Garam";
+    }
 
     // Auto Journal Entry
     const journalId = `JU-${date.replace(/-/g, "").slice(0, 6)}-${String(journalEntries.length + 1).padStart(3, "0")}`;
@@ -768,7 +784,7 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
           credit: 0,
         },
         {
-          accountCode: "2001",
+          accountCode: "2110",
           accountName: "Utang Usaha Pemasok",
           debit: 0,
           credit: totalAmount,
@@ -843,7 +859,7 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
       refId: newPayment.id,
       items: [
         {
-          accountCode: "2001",
+          accountCode: "2110",
           accountName: "Utang Usaha Pemasok",
           debit: amount,
           credit: 0,
@@ -1020,7 +1036,7 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
           credit: 0,
         },
         {
-          accountCode: "1101",
+          accountCode: "1140",
           accountName: "Piutang Usaha",
           debit: 0,
           credit: sale.totalAmount,
@@ -1100,6 +1116,38 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  // ACTION 12: Add Chart of Account (COA Baru)
+  const addChartOfAccount: GoorameContextType["addChartOfAccount"] = async ({
+    code,
+    name,
+    category,
+    normalBalance,
+    description,
+  }) => {
+    try {
+      const created = await api.createChartOfAccount({
+        code,
+        name,
+        category,
+        normalBalance,
+        description,
+      });
+      setChartOfAccounts((prev) => [...prev, created].sort((a, b) => a.code.localeCompare(b.code)));
+      setNotification(`Akun ${code} - ${name} berhasil ditambahkan ke COA.`);
+      return { success: true };
+    } catch (e: any) {
+      // Local optimistic fallback
+      const exists = chartOfAccounts.some((c) => c.code === code);
+      if (exists) {
+        return { success: false, error: `Kode akun ${code} sudah ada.` };
+      }
+      const newCoa: ChartOfAccount = { code, name, category, normalBalance, description };
+      setChartOfAccounts((prev) => [...prev, newCoa].sort((a, b) => a.code.localeCompare(b.code)));
+      setNotification(`Akun ${code} ditambahkan (lokal).`);
+      return { success: true };
+    }
+  };
+
   return (
     <GoorameContext.Provider
       value={{
@@ -1147,6 +1195,7 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
         payCustomerReceivable,
         addPond,
         addCashAccount,
+        addChartOfAccount,
       }}
     >
       {children}

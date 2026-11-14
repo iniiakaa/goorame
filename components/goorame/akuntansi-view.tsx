@@ -13,11 +13,19 @@ import {
 import { ModalManualJournal } from "./modals";
 
 export function AkuntansiView() {
-  const { journalEntries, ledger } = useGoorame();
-  const [subTab, setSubTab] = useState<"JURNAL" | "BUKU_BESAR">("JURNAL");
+  const { journalEntries, ledger, chartOfAccounts, addChartOfAccount } = useGoorame();
+  const [subTab, setSubTab] = useState<"JURNAL" | "BUKU_BESAR" | "COA">("JURNAL");
   const [modalManualOpen, setModalManualOpen] = useState(false);
+  const [modalAddCoaOpen, setModalAddCoaOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedLedgerCode, setSelectedLedgerCode] = useState<string>("5001"); // default drilldown: Beban Pakan
+  const [selectedLedgerCode, setSelectedLedgerCode] = useState<string>("1160"); // default drilldown: Persediaan Pakan
+  const [newCoa, setNewCoa] = useState({
+    code: "",
+    name: "",
+    category: "BEBAN" as "ASET" | "KEWAJIBAN" | "EKUITAS" | "PENDAPATAN" | "BEBAN",
+    normalBalance: "DEBIT" as "DEBIT" | "KREDIT",
+    description: "",
+  });
 
   const selectedLedger = ledger.find((l) => l.code === selectedLedgerCode) || ledger[0];
 
@@ -99,7 +107,26 @@ export function AkuntansiView() {
             >
               Buku Besar (Ledger)
             </button>
+            <button
+              onClick={() => setSubTab("COA")}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                subTab === "COA"
+                  ? "bg-[var(--gw-ink)] text-[var(--gw-button-ink)] shadow-sm font-semibold"
+                  : "text-[var(--gw-muted)] hover:text-[var(--gw-ink)]"
+              }`}
+            >
+              Bagan Akun (COA)
+            </button>
           </div>
+
+          {subTab === "COA" && (
+            <button
+              onClick={() => setModalAddCoaOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[var(--gw-button)] text-[var(--gw-button-ink)] hover:brightness-110 shadow-sm transition-all"
+            >
+              <PlusCircle size={15} /> Tambah Akun Baru
+            </button>
+          )}
 
           {subTab === "JURNAL" && (
             <button
@@ -319,6 +346,173 @@ export function AkuntansiView() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 3: BAGAN AKUN (COA) MASTER DATA */}
+      {subTab === "COA" && (
+        <div className="gw-panel p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div>
+              <h3 className="font-semibold text-sm text-[var(--gw-ink)]">
+                Master Data Bagan Akun (Chart of Accounts)
+              </h3>
+              <p className="text-[11px] text-[var(--gw-muted)]">
+                Daftar hierarki akun pembukuan: Aset (1000), Kewajiban (2000), Ekuitas (3000), Pendapatan (4000), HPP (5000), dan Beban Operasional (6000).
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-lg bg-[var(--gw-surface)] border border-[var(--gw-line)] text-xs text-[var(--gw-muted)]">
+                Total Akun: <strong className="text-[var(--gw-ink)]">{chartOfAccounts.length}</strong>
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--gw-line)] text-[var(--gw-muted)] font-medium">
+                  <th className="pb-2.5">Kode Akun</th>
+                  <th className="pb-2.5">Nama Akun</th>
+                  <th className="pb-2.5">Klasifikasi / Kategori</th>
+                  <th className="pb-2.5 text-center">Saldo Normal</th>
+                  <th className="pb-2.5">Keterangan / Fungsi Akun</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--gw-line)]">
+                {chartOfAccounts.map((coa) => (
+                  <tr key={coa.code} className="hover:bg-[var(--gw-surface)] transition-colors">
+                    <td className="py-2.5 font-mono font-bold text-[var(--gw-ink)] whitespace-nowrap">
+                      {coa.code}
+                    </td>
+                    <td className="py-2.5 font-semibold text-[var(--gw-ink)]">
+                      {coa.name}
+                    </td>
+                    <td className="py-2.5">
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                          coa.category === "ASET"
+                            ? "bg-blue-500/15 text-blue-300 border border-blue-500/20"
+                            : coa.category === "KEWAJIBAN"
+                            ? "bg-amber-500/15 text-amber-300 border border-amber-500/20"
+                            : coa.category === "EKUITAS"
+                            ? "bg-purple-500/15 text-purple-300 border border-purple-500/20"
+                            : coa.category === "PENDAPATAN"
+                            ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20"
+                            : "bg-rose-500/15 text-rose-300 border border-rose-500/20"
+                        }`}
+                      >
+                        {coa.category}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-center font-semibold text-[11px] text-[var(--gw-ink)]">
+                      {coa.normalBalance}
+                    </td>
+                    <td className="py-2.5 text-[var(--gw-muted)] text-[11px] max-w-md">
+                      {coa.description || "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tambah COA */}
+      {modalAddCoaOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="gw-panel max-w-md w-full p-6 space-y-4">
+            <h3 className="text-base font-bold text-[var(--gw-ink)]">Tambah Akun Baru ke Bagan Akun (COA)</h3>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-[var(--gw-muted)] mb-1 font-medium">Kode Akun (misal: 1190, 6150)</label>
+                <input
+                  type="text"
+                  value={newCoa.code}
+                  onChange={(e) => setNewCoa({ ...newCoa, code: e.target.value })}
+                  placeholder="Kode 4-digit"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--gw-surface)] border border-[var(--gw-line)] text-[var(--gw-ink)] outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-[var(--gw-muted)] mb-1 font-medium">Nama Akun</label>
+                <input
+                  type="text"
+                  value={newCoa.name}
+                  onChange={(e) => setNewCoa({ ...newCoa, name: e.target.value })}
+                  placeholder="Nama Akun Akuntansi"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--gw-surface)] border border-[var(--gw-line)] text-[var(--gw-ink)] outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[var(--gw-muted)] mb-1 font-medium">Kategori</label>
+                  <select
+                    value={newCoa.category}
+                    onChange={(e: any) => setNewCoa({ ...newCoa, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg bg-[var(--gw-surface)] border border-[var(--gw-line)] text-[var(--gw-ink)] outline-none"
+                  >
+                    <option value="ASET">ASET</option>
+                    <option value="KEWAJIBAN">KEWAJIBAN</option>
+                    <option value="EKUITAS">EKUITAS</option>
+                    <option value="PENDAPATAN">PENDAPATAN</option>
+                    <option value="BEBAN">BEBAN</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[var(--gw-muted)] mb-1 font-medium">Saldo Normal</label>
+                  <select
+                    value={newCoa.normalBalance}
+                    onChange={(e: any) => setNewCoa({ ...newCoa, normalBalance: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg bg-[var(--gw-surface)] border border-[var(--gw-line)] text-[var(--gw-ink)] outline-none"
+                  >
+                    <option value="DEBIT">DEBIT</option>
+                    <option value="KREDIT">KREDIT</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[var(--gw-muted)] mb-1 font-medium">Keterangan / Fungsi</label>
+                <input
+                  type="text"
+                  value={newCoa.description}
+                  onChange={(e) => setNewCoa({ ...newCoa, description: e.target.value })}
+                  placeholder="Deskripsi singkat penggunaan akun"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--gw-surface)] border border-[var(--gw-line)] text-[var(--gw-ink)] outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setModalAddCoaOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-medium border border-[var(--gw-line)] text-[var(--gw-ink)] hover:bg-[var(--gw-surface)]"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!newCoa.code || !newCoa.name) return;
+                  await addChartOfAccount(newCoa);
+                  setModalAddCoaOpen(false);
+                  setNewCoa({
+                    code: "",
+                    name: "",
+                    category: "BEBAN",
+                    normalBalance: "DEBIT",
+                    description: "",
+                  });
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-[var(--gw-button)] text-[var(--gw-button-ink)] hover:brightness-110 shadow-sm"
+              >
+                Simpan Akun
+              </button>
             </div>
           </div>
         </div>
