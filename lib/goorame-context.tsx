@@ -162,7 +162,15 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem("goorame-auth-session");
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const user = JSON.parse(saved);
+          // Normalisasi otomatis jika masih tersimpan nama lama "H. Slamet" atau "Pak Budi"
+          if (user && (user.name?.includes("Slamet") || user.name?.includes("Budi"))) {
+            user.name = user.role === "PEMILIK" ? "Pemilik" : "Pekerja";
+            localStorage.setItem("goorame-auth-session", JSON.stringify(user));
+          }
+          return user;
+        }
       } catch (e) {}
     }
     return null;

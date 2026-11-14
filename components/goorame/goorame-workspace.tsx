@@ -401,10 +401,10 @@ function GoorameInnerWorkspace({
                   </span>
                   <div className="hidden lg:flex flex-col text-left">
                     <span className="text-xs font-bold leading-tight text-[var(--gw-ink)]">
-                      {currentUser.name}
+                      {role === "PEMILIK" ? "Pemilik" : "Pekerja"}
                     </span>
                     <span className="text-[10px] text-[var(--gw-muted)]">
-                      {currentUser.role === "PEMILIK" ? "Akses Finansial & Operasional" : "Akses Petugas Lapangan"}
+                      {role === "PEMILIK" ? "Akses Finansial & Operasional" : "Akses Petugas Lapangan"}
                     </span>
                   </div>
                   <button
