@@ -42,33 +42,39 @@ export function LoginView({ onOpenSettings }: LoginViewProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) {
-      setErrorMessage("Silakan masukkan username atau nama Anda.");
+      setErrorMessage("Silakan masukkan username Anda.");
+      return;
+    }
+    if (!password) {
+      setErrorMessage("Silakan masukkan kata sandi Anda.");
       return;
     }
     setIsLoading(true);
     setErrorMessage(null);
 
-    setTimeout(() => {
-      const res = login(username, password, selectedRole);
-      if (!res.success) {
-        setErrorMessage(res.error || "Gagal masuk ke sistem.");
-        setIsLoading(false);
-      }
-    }, 280);
+    const res = await login(username, password, selectedRole);
+    if (!res.success) {
+      setErrorMessage(res.error || "Gagal masuk ke sistem. Periksa username dan password Anda.");
+      setIsLoading(false);
+    }
   };
 
-  const handleQuickLogin = (role: UserRole) => {
+  const handleQuickLogin = async (role: UserRole) => {
     setIsLoading(true);
-    setTimeout(() => {
-      login(
-        role === "PEMILIK" ? "pemilik" : "pekerja",
-        role === "PEMILIK" ? "admin123" : "pekerja123",
-        role
-      );
-    }, 200);
+    setErrorMessage(null);
+    const u = role === "PEMILIK" ? "pemilik" : "pekerja";
+    const p = role === "PEMILIK" ? "admin123" : "pekerja123";
+    setUsername(u);
+    setPassword(p);
+    setSelectedRole(role);
+    const res = await login(u, p, role);
+    if (!res.success) {
+      setErrorMessage(res.error || "Gagal masuk.");
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -32,7 +32,7 @@ import { api } from "./api-client";
 
 interface GoorameContextType {
   currentUser: AuthUser | null;
-  login: (username: string, password?: string, roleOverride?: UserRole) => { success: boolean; error?: string };
+  login: (username: string, password?: string, roleOverride?: UserRole) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   role: UserRole;
   setRole: (role: UserRole) => void;
@@ -204,73 +204,70 @@ export function GoorameProvider({ children }: { children: React.ReactNode }) {
 
   const [loginLoading, setLoginLoading] = useState(false);
 
-  const login = (
+  const login = async (
     username: string,
     password?: string,
     roleOverride?: UserRole
-  ): { success: boolean; error?: string } => {
-    const trimmed = username.trim();
+  ): Promise<{ success: boolean; error?: string }> => {
+    const trimmed = username.trim().toLowerCase();
     if (!trimmed) {
-      return { success: false, error: "Mohon masukkan nama atau ID akun Anda." };
+      return { success: false, error: "Mohon masukkan username Anda." };
+    }
+    if (!password) {
+      return { success: false, error: "Kata sandi harus diisi." };
     }
 
-    // Attempt backend API login asynchronously, but return optimistic success
     setLoginLoading(true);
-    api
-      .login(trimmed, password, roleOverride)
-      .then(({ user }) => {
-        setCurrentUser(user);
-        setRoleState(user.role);
-        setActiveTab("dashboard");
-        if (typeof window !== "undefined") {
-          try {
-            localStorage.setItem("goorame-auth-session", JSON.stringify(user));
-          } catch (e) {}
-        }
-        setNotification(`Selamat datang kembali, ${user.name}!`);
-        // Reload data after login
-        loadDataFromDatabase();
-      })
-      .catch(() => {
-        // Fallback: local login if backend is offline
-        const lower = trimmed.toLowerCase();
-        let userRole: UserRole = roleOverride || "PEMILIK";
-        let displayName = userRole === "PEMILIK" ? "Pemilik" : "Pekerja";
 
-        if (
-          roleOverride === "PEKERJA" ||
-          lower.includes("pekerja") ||
-          lower.includes("kolam") ||
-          lower.includes("budi")
-        ) {
-          userRole = "PEKERJA";
-          displayName = "Pekerja";
-        } else {
-          userRole = "PEMILIK";
-          displayName = "Pemilik";
-        }
+    try {
+      // 1. Coba verifikasi ke API backend FastAPI
+      const { user } = await api.login(trimmed, password, roleOverride);
+      setCurrentUser(user);
+      setRoleState(user.role);
+      setActiveTab("dashboard");
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("goorame-auth-session", JSON.stringify(user));
+        } catch (e) {}
+      }
+      setNotification(`Selamat datang kembali, ${user.name}!`);
+      loadDataFromDatabase();
+      return { success: true };
+    } catch (apiError: any) {
+      // 2. Jika backend offline, periksa akun lokal yang valid secara ketat
+      // Akun valid: pemilik (admin123) dan pekerja (pekerja123)
+      const validAccounts: Record<string, { pass: string; name: string; role: UserRole; avatar: string }> = {
+        pemilik: { pass: "admin123", name: "Pemilik", role: "PEMILIK", avatar: "P" },
+        pekerja: { pass: "pekerja123", name: "Pekerja", role: "PEKERJA", avatar: "K" },
+      };
 
+      const account = validAccounts[trimmed];
+      if (account && password === account.pass) {
         const user: AuthUser = {
-          id: `user-${Date.now()}`,
+          id: `user-${trimmed}`,
           username: trimmed,
-          name: displayName,
-          role: userRole,
-          avatarLetter: userRole === "PEMILIK" ? "P" : "K",
+          name: account.name,
+          role: account.role,
+          avatarLetter: account.avatar,
         };
-
         setCurrentUser(user);
-        setRoleState(userRole);
+        setRoleState(account.role);
         setActiveTab("dashboard");
         if (typeof window !== "undefined") {
           try {
             localStorage.setItem("goorame-auth-session", JSON.stringify(user));
           } catch (e) {}
         }
-        setNotification(`Selamat datang, ${displayName}! (Mode offline)`);
-      })
-      .finally(() => setLoginLoading(false));
+        setNotification(`Selamat datang, ${account.name}!`);
+        return { success: true };
+      }
 
-    return { success: true };
+      // Password atau username tidak valid
+      const errMsg = apiError?.message || "Username atau kata sandi tidak sesuai!";
+      return { success: false, error: errMsg };
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
   const logout = () => {
