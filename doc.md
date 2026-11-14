@@ -1,164 +1,163 @@
-# Panduan Environment & Cara Menjalankan Goorame Mini-ERP
+# 📘 Panduan Menjalankan Goorame Mini-ERP (Untuk Pemula)
 
-Dokumentasi ini menjelaskan konfigurasi environment, arsitektur sistem, dan langkah-langkah menjalankan aplikasi **Goorame Mini-ERP** (Sistem Manajemen Budidaya Ikan Gurame & Akuntansi Double-Entry).
-
----
-
-## 1. Prasyarat Sistem (Prerequisites)
-
-Pastikan di komputer Anda telah terinstal:
-
-- **Node.js**: v18.x / v20.x ke atas (dengan `npm` atau `pnpm`)
-- **Python**: v3.10 ke atas (direkomendasikan v3.11 atau v3.12)
-- **Sistem Operasi**: Windows, macOS, atau Linux
+Selamat datang! Dokumen ini dibuat khusus agar **siapa saja yang baru menginstal Visual Studio Code (VS Code)** bisa menjalankan aplikasi **Goorame Mini-ERP** di komputernya dengan mudah, langkah demi langkah, tanpa bingung.
 
 ---
 
-## 2. Struktur Proyek
+## 🧭 Gambaran Singkat Aplikasi
 
+Aplikasi **Goorame** terdiri dari 2 bagian yang bekerja bersamaan:
+1. **Frontend (Tampilan Website)**: Dibuat dengan Next.js / React (berjalan di port `3000`).
+2. **Backend (Otak & Database)**: Dibuat dengan Python FastAPI & SQLite (berjalan di port `8000`).
+
+Agar aplikasi bisa dibuka di browser, **keduanya harus dinyalakan bersamaan**.
+
+---
+
+## 🛠️ Langkah 0: Program yang Harus Terinstal di Laptop / PC
+
+Sebelum mulai di VS Code, pastikan 2 program ini sudah terinstal di komputer Anda:
+
+1. **Node.js** (Versi 18 atau 20 ke atas)
+   - Download di: [https://nodejs.org/](https://nodejs.org/) (Pilih versi **LTS**).
+2. **Python** (Versi 3.10, 3.11, atau 3.12)
+   - Download di: [https://www.python.org/downloads/](https://www.python.org/downloads/)
+   - ⚠️ **PENTING SAAT INSTALL PYTHON**: Centang kotak bertuliskan **"Add python.exe to PATH"** di bagian bawah sebelum klik tombol Install.
+
+---
+
+## 💻 Langkah 1: Membuka Folder Proyek di VS Code
+
+1. Buka aplikasi **VS Code**.
+2. Klik menu **File** (di pojok kiri atas) → pilih **Open Folder...**.
+3. Cari dan pilih folder proyek:
+   ```text
+   f:\tugasmandiri\Punyadia\goorame
+   ```
+4. Jika muncul jendela peringatan *"Do you trust the authors of the files in this folder?"*, klik tombol **Yes, I trust the authors**.
+
+---
+
+## 🖥️ Langkah 2: Membuka Terminal di VS Code
+
+Terminal adalah tempat kita mengetikkan perintah untuk menyalakan program:
+
+1. Di menu atas VS Code, klik **Terminal** → pilih **New Terminal**.
+2. Sebuah jendela hitam/abu-abu (PowerShell) akan muncul di bagian bawah layar VS Code Anda.
+
+---
+
+## 🚀 Langkah 3: Menjalankan Backend (Python FastAPI)
+
+Kita jalankan bagian Backend terlebih dahulu.
+
+### 3.1 Jika Ini Pertama Kali Anda Menjalankan Proyek:
+Ketik perintah ini di terminal satu per satu lalu tekan **Enter**:
+
+```powershell
+# 1. Masuk ke virtual environment Python bawaan
+backend\venv\Scripts\Activate.ps1
+
+# 2. Pastikan paket dependensi terpasang
+pip install -r backend\requirements.txt
+```
+
+> 💡 *Catatan:* Jika muncul tulisan merah *"running scripts is disabled on this system"*, Anda bisa langsung melompat ke langkah 3.2 di bawah tanpa perlu pusing!
+
+### 3.2 Menyalakan Server Backend:
+Cukup ketik perintah ini di terminal dan tekan **Enter**:
+
+```powershell
+backend\venv\Scripts\python.exe backend\run.py
+```
+
+Jika berhasil, terminal akan menampilkan teks seperti ini:
 ```text
-goorame/
-├── app/                      # Next.js App Router (Frontend)
-├── components/               # Komponen Glassmorphism UI & Views
-│   ├── goorame/              # Workspace, Login, Views Kolam, Keuangan, dll.
-│   └── ui/                   # Komponen atomik UI
-├── lib/                      # Logika Akuntansi, Context API, API Client, Types
-├── public/                   # Asset statis (bg.jpg, icons, dll.)
-├── backend/                  # Backend Python FastAPI + SQLAlchemy
-│   ├── app/
-│   │   ├── api/routes/       # Router endpoints (auth, ponds, sales, expenses, coa)
-│   │   ├── core/             # Konfigurasi database & seeder
-│   │   ├── models/           # SQLAlchemy models
-│   │   └── schemas/          # Pydantic schemas (validasi request/response)
-│   ├── run.py                # Entry point server Uvicorn
-│   └── requirements.txt      # Dependensi Python
-├── goorame.db                # SQLite database (otomatis di-generate / auto-seed)
-└── doc.md                    # Dokumentasi ini
+==================================================
+🚀 Goorame Mini-ERP Backend (FastAPI)
+🌍 Host: 0.0.0.0:8000
+📖 Swagger UI: /docs
+==================================================
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Application startup complete.
 ```
+✅ **Backend sudah menyala! Biarkan terminal ini tetap terbuka.**
 
 ---
 
-## 3. Konfigurasi Environment (`.env`)
+## 🌐 Langkah 4: Menjalankan Frontend (Tampilan Website)
 
-### A. Frontend (`.env.local` - Opsional)
-Buat file `.env.local` di root proyek jika ingin mengubah URL backend:
+Sekarang kita perlu membuka **terminal kedua** tanpa mematikan terminal pertama.
 
-```env
-NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
-```
-*(Secara default, `lib/api-client.ts` menggunakan fallback `http://127.0.0.1:8000/api` jika variabel ini tidak diset).*
-
-### B. Backend (`backend/.env` - Opsional)
-Secara bawaan database SQLite akan disimpan di file root `goorame.db`. Jika diperlukan pengaturan kustom:
-
-```env
-DATABASE_URL=sqlite:///../goorame.db
-SECRET_KEY=goorame-super-secret-key-change-in-production
-ACCESS_TOKEN_EXPIRE_MINUTES=1440
-```
-
----
-
-## 4. Langkah Menjalankan Proyek
-
-Buka 2 jendela terminal (satu untuk **Backend**, satu untuk **Frontend**).
-
----
-
-### Terminal 1: Menjalankan Backend (FastAPI + SQLAlchemy)
-
-1. Buka direktori root proyek:
-   ```bash
+1. Di pojok kanan atas jendela terminal (di bawah), klik tanda **`+`** (Split / New Terminal) untuk membuat terminal baru.
+2. Di terminal kedua yang baru muncul, pastikan Anda berada di folder utama:
+   ```powershell
    cd f:\tugasmandiri\Punyadia\goorame
    ```
 
-2. **(Pertama kali)** Buat virtual environment Python dan instal dependensi:
-   - **Windows (PowerShell)**:
-     ```powershell
-     python -m venv backend\venv
-     backend\venv\Scripts\Activate.ps1
-     pip install -r backend\requirements.txt
-     ```
-   - **Linux / macOS**:
-     ```bash
-     python3 -m venv backend/venv
-     source backend/venv/bin/activate
-     pip install -r backend/requirements.txt
-     ```
+### 4.1 Jika Ini Pertama Kali:
+Ketik perintah ini untuk memasang pustaka tampilan website:
+```powershell
+npm install
+```
+*(Tunggu 1–2 menit sampai proses unduhan selesai).*
 
-3. Jalankan server backend:
-   - **Windows**:
-     ```powershell
-     backend\venv\Scripts\python.exe backend\run.py
-     ```
-   - **Linux / macOS**:
-     ```bash
-     ./backend/venv/bin/python backend/run.py
-     ```
-   *Atau langsung via Uvicorn:*
-   ```bash
-   uvicorn backend.app.main:app --reload --port 8000
-   ```
+### 4.2 Menyalakan Frontend:
+Ketik perintah ini dan tekan **Enter**:
+```powershell
+npm run dev
+```
 
-4. **Verifikasi Backend Aktif:**
-   - URL API: [http://127.0.0.1:8000](http://127.0.0.1:8000)
-   - Dokumentasi Swagger Interaktif: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-   - Auto-seed database otomatis berjalan saat startup pertama kali jika data masih kosong.
+Jika berhasil, terminal akan menampilkan:
+```text
+▲ Next.js 16.4.5 (Turbopack)
+- Local:   http://localhost:3000
+✓ Ready in 2.5s
+```
+✅ **Frontend sudah menyala!**
 
 ---
 
-### Terminal 2: Menjalankan Frontend (Next.js)
+## 📱 Langkah 5: Membuka Aplikasi di Browser
 
-1. Buka direktori root proyek:
-   ```bash
-   cd f:\tugasmandiri\Punyadia\goorame
-   ```
+Buka browser favorit Anda (Google Chrome, Microsoft Edge, atau Mozilla Firefox), lalu ketik alamat berikut:
 
-2. **(Pertama kali)** Instal dependensi Node.js:
-   ```bash
-   npm install
-   ```
+👉 **[http://localhost:3000](http://localhost:3000)**
 
-3. Jalankan server pengembangan Next.js:
-   ```bash
-   npm run dev
-   ```
-
-4. Buka di browser:
-   - Akses: [http://localhost:3000](http://localhost:3000)
+Halaman login **Goorame** akan langsung muncul di layar Anda!
 
 ---
 
-## 5. Akun Default untuk Login (Demo Data)
+## 🔑 Akun untuk Masuk (Login)
 
-Sistem telah dilengkapi data awal (seed) dengan 2 role pengguna:
+Anda bisa langsung mengklik tombol **1-Klik Demo** di bawah form login, atau mengetikkan manual:
 
-| Role | Username | Password | Hak Akses |
+| Role / Jabatan | Username | Password | Keterangan Akses |
 | :--- | :--- | :--- | :--- |
-| **Pemilik Usaha** | `pemilik` | `admin123` | Akses penuh (Dashboard, Kolam, Penjualan, Keuangan, Jurnal, Laporan L/R & Neraca) |
-| **Pekerja Kolam** | `pekerja` | `pekerja123` | Terbatas (Dashboard operasional, monitoring kolam, tebar bibit, pencatatan kematian) |
-
-> **Catatan UI**: Di halaman login tersedia tombol pintas *1-Click Demo* untuk langsung mengisi form sebagai Pemilik atau Pekerja.
+| **Pemilik Usaha** | `pemilik` | `admin123` | Akses penuh (Dashboard, Keuangan, Kas/Bank, Penjualan, Jurnal & Neraca) |
+| **Pekerja Kolam** | `pekerja` | `pekerja123` | Akses khusus lapangan (Stok Ikan Kolam, Tebar Bibit, Catat Ikan Mati) |
 
 ---
 
-## 6. Fitur & Pengujian Alur Data
+## 🛑 Cara Mematikan Server (Jika Sudah Selesai)
 
-1. **Database Badge Indikator**:
-   - Jika backend FastAPI aktif dan terhubung ke SQLite, badge indikator status di pojok kanan atas topbar akan menyala hijau (`Database SQLite Aktif`).
-2. **Sinkronisasi Data Dua Arah**:
-   - Semua penambahan transaksi Penjualan, Biaya Operasional, Tebar Bibit, Kematian Ikan, dan Jurnal Manual langsung disimpan ke `goorame.db` melalui API dan di-refresh ke UI.
-3. **Double-Entry Bookkeeping**:
-   - Setiap transaksi otomatis membentuk jurnal debit-kredit seimbang yang dapat diperiksa di menu **Jurnal Umum** dan **Buku Besar**.
-4. **Glassmorphism Customizer**:
-   - Pengaturan visual (Blur, Opacity, Saturation, Edge) dapat disesuaikan lewat ikon slider di topbar.
+Jika Anda sudah selesai menggunakan aplikasi dan ingin mematikannya:
+1. Klik pada jendela terminal di VS Code.
+2. Tekan tombol **`Ctrl + C`** di keyboard Anda (tekan bersamaan).
+3. Jika ditanya `Terminate batch job (Y/N)?`, ketik **`Y`** lalu tekan **Enter**.
+4. Lakukan hal yang sama pada kedua terminal.
 
 ---
 
-## 7. Troubleshooting
+## ❓ Masalah yang Sering Dialami Pemula (FAQ)
 
-- **Database lock / reset data**:
-  Jika ingin me-reset database kembali ke kondisi awal, cukup hapus file `goorame.db` lalu restart backend (`backend/run.py`). Backend akan otomatis men-generate ulang tabel dan melakukan seeding data default.
-- **Port 8000 atau 3000 sudah terpakai**:
-  - Matikan proses lama atau ubah port di file `backend/run.py` (untuk backend) atau jalankan `npm run dev -- -p 3001` (untuk frontend).
+### 1. Muncul Tulisan *"Database Menghubungkan..."* warna kuning di topbar
+- **Penyebab**: Server Backend (Langkah 3) belum dinyalakan atau tidak sengaja tertutup.
+- **Solusi**: Pastikan terminal Backend tetap berjalan di port `8000`. Jika backend aktif, badge akan menyala hijau bertuliskan **"SQLite Database Aktif"**.
 
+### 2. Port 3000 atau 8000 Bentrok (*Already in use*)
+- **Penyebab**: Server lama belum dimatikan sempurna saat menutup VS Code.
+- **Solusi**: Tutup aplikasi VS Code sepenuhnya, lalu buka kembali dan jalankan perintah dari Langkah 3.
+
+### 3. Ingin Reset Ulang Data ke Awal
+- Cukup hapus file `goorame.db` di folder proyek, lalu restart backend. Sistem otomatis men-generate ulang database baru lengkap dengan data bawaan yang rapi.
