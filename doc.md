@@ -280,9 +280,10 @@ Baik di versi Web maupun Desktop, tersedia 8 modul lengkap:
 - Memantau saldo riil di masing-masing rekening: Bank BCA (`1110`), Bank BRI (`1120`), dan Kas Kecil (`1130`).
 - **Transfer Kas**: Fitur mutasi saldo antar dompet (misal: penarikan tunai dari BCA ke Kas Kecil) dengan jurnal debit-kredit otomatis.
 
-### 7. 📑 Akuntansi Double-Entry & Bagan Akun (COA)
-- **Buku Jurnal Umum**: Melihat riwayat jurnal berpasangan dari setiap transaksi beserta status *balance check* (Debet = Kredit).
-- **Jurnal Manual**: Form entri jurnal akuntansi manual untuk penyesuaian khusus.
+### 7. 📑 Akuntansi Double-Entry, Buku Besar & Bagan Akun (COA)
+- **Buku Jurnal Umum**: Melihat riwayat seluruh ayat jurnal berpasangan dari setiap transaksi operasional beserta status *balance check* (Debet = Kredit).
+- **📚 Buku Besar (General Ledger)**: Melihat rincian mutasi spesifik per akun akun akuntansi (misalnya: akun Kas di Bank BCA `1110`, Piutang Usaha `1140`, Persediaan Pakan `1160`, Utang Pemasok `2110`, Penjualan Gurame `4110`, dll). Menampilkan tanggal, no bukti referensi, uraian transaksi, debet, kredit, serta **saldo berjalan (*running balance*)** dan saldo akhir akun. Dilengkapi tombol **Unduh CSV Buku Besar**.
+- **Jurnal Manual**: Form entri jurnal akuntansi manual untuk penyesuaian khusus dengan validasi keseimbangan debit-kredit otomatis.
 - **COA Terstandarisasi**: Daftar hierarki 22 akun standar budidaya gurame (1110 s.d 6190) dengan tombol sinkronisasi otomatis ke Railway.
 
 ### 8. 📈 Laporan Keuangan Standar

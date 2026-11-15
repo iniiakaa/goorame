@@ -30,8 +30,9 @@ Aplikasi desktop Goorame telah dilengkapi dengan seluruh modul operasional dan a
 6. **🏦 Dompet Kas Operasional & Rekening Bank**:
    - Kartu saldo real-time: Bank BCA (`1110`), Bank BRI (`1120`), Kas di Tangan/Kas Kecil (`1130`).
    - Modal transfer antar rekening kas/bank dengan mutasi jurnal otomatis.
-7. **📑 Akuntansi Double-Entry & Bagan Akun (COA 1110-6190)**:
+7. **📑 Akuntansi Double-Entry, Buku Besar & Bagan Akun (COA 1110-6190)**:
    - **Buku Jurnal Umum**: Audit trail transaksi lengkap dengan nomor bukti, kode akun, debet, kredit, dan verifikasi keseimbangan (*balance check*).
+   - **📚 Buku Besar (General Ledger)**: Drilldown mutasi detail per akun COA dengan kartu saldo akhir, tabel debet/kredit/saldo berjalan (*running balance*), dan tombol **Unduh CSV Buku Besar**.
    - Modal Entri Jurnal Manual (dengan validasi otomatis Debet == Kredit).
    - **Bagan Akun (COA Terstandarisasi)**: Hierarki akun 1000 Aset, 2000 Kewajiban, 3000 Ekuitas, 4000 Pendapatan, 5000 HPP, 6000 Beban.
    - Tombol Sinkronisasi Standar COA ke Database Railway.

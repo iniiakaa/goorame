@@ -812,11 +812,12 @@ class GoorameApp(tk.Tk):
                     cash_accs = self.api.get_cash_accounts()
                     self.after(0, lambda: self._update_kas_cards(cash_accs))
 
-                    # 7. Journals & COA
+                    # 7. Journals, COA & Buku Besar (General Ledger)
                     journals = self.api.get_journals()
                     coas = self.api.get_coa()
                     self.after(0, lambda: self._update_journals_table(journals))
                     self.after(0, lambda: self._update_coa_table(coas))
+                    self.after(0, lambda: self._update_ledger_data(coas, journals))
 
                     # 8. Reports (Income statement & Balance sheet)
                     inc = self.api.get_income_statement()
@@ -1560,7 +1561,7 @@ class GoorameApp(tk.Tk):
         )
         btn_add_ju.pack(side="left", padx=3, ipady=3)
 
-        # Sub-notebook: 1. Jurnal Umum, 2. Bagan Akun (COA)
+        # Sub-notebook: 1. Jurnal Umum, 2. Buku Besar (Ledger), 3. Bagan Akun (COA)
         sub_nb = ttk.Notebook(container, style="Custom.TNotebook")
         sub_nb.pack(fill="both", expand=True)
 
@@ -1594,7 +1595,73 @@ class GoorameApp(tk.Tk):
         sb_ju.pack(side="right", fill="y")
         self.ju_tree.pack(fill="both", expand=True)
 
-        # Sub-Tab 2: Bagan Akun COA
+        # Sub-Tab 2: Buku Besar (General Ledger)
+        ledger_frame = tk.Frame(sub_nb, bg=self.colors["bg"])
+        sub_nb.add(ledger_frame, text="📚 Buku Besar (General Ledger)")
+
+        # Top selection bar & Account summary card
+        ledger_top = tk.Frame(ledger_frame, bg=self.colors["card"], padx=14, pady=10, highlightbackground=self.colors["border"], highlightthickness=1)
+        ledger_top.pack(fill="x", padx=4, pady=(6, 8))
+
+        # Row 1: Selection & Export
+        row_sel = tk.Frame(ledger_top, bg=self.colors["card"])
+        row_sel.pack(fill="x", pady=(0, 8))
+
+        tk.Label(row_sel, text="Pilih Akun Buku Besar:", font=("Segoe UI", 9, "bold"), bg=self.colors["card"], fg=self.colors["text"]).pack(side="left", padx=(0, 8))
+        self.cb_ledger_account = ttk.Combobox(row_sel, state="readonly", font=("Segoe UI", 9), width=48)
+        self.cb_ledger_account.pack(side="left", padx=(0, 12))
+        self.cb_ledger_account.bind("<<ComboboxSelected>>", self._on_ledger_account_selected)
+
+        btn_export_ledger = tk.Button(
+            row_sel,
+            text="📥 Unduh CSV Buku Besar Akun Ini",
+            font=("Segoe UI", 8, "bold"),
+            bg=self.colors["sidebar"],
+            fg=self.colors["text"],
+            relief="flat",
+            cursor="hand2",
+            padx=10,
+            command=self.export_current_ledger_csv,
+        )
+        btn_export_ledger.pack(side="right", ipady=3)
+
+        # Row 2: Account Badges & Balance
+        row_info = tk.Frame(ledger_top, bg=self.colors["card"])
+        row_info.pack(fill="x")
+
+        self.lbl_ledger_title = tk.Label(row_info, text="Buku Besar Akun: -", font=("Segoe UI", 11, "bold"), bg=self.colors["card"], fg=self.colors["primary"])
+        self.lbl_ledger_title.pack(side="left")
+
+        self.lbl_ledger_normal = tk.Label(row_info, text="Saldo Normal: DEBIT", font=("Segoe UI", 8), bg=self.colors["card"], fg=self.colors["text_muted"])
+        self.lbl_ledger_normal.pack(side="left", padx=(14, 0))
+
+        self.lbl_ledger_balance = tk.Label(row_info, text="Saldo Akhir: Rp 0", font=("Segoe UI", 12, "bold"), bg=self.colors["card"], fg="#FFFFFF")
+        self.lbl_ledger_balance.pack(side="right")
+
+        # Table Mutasi Buku Besar
+        cols_ledger = ("date", "ref_no", "desc", "debit", "credit", "balance")
+        self.ledger_tree = ttk.Treeview(ledger_frame, columns=cols_ledger, show="headings", style="Custom.Treeview")
+
+        self.ledger_tree.heading("date", text="Tanggal")
+        self.ledger_tree.heading("ref_no", text="No Bukti / Ref")
+        self.ledger_tree.heading("desc", text="Deskripsi / Uraian Mutasi")
+        self.ledger_tree.heading("debit", text="Debet (Rp)")
+        self.ledger_tree.heading("credit", text="Kredit (Rp)")
+        self.ledger_tree.heading("balance", text="Saldo Berjalan (Rp)")
+
+        self.ledger_tree.column("date", width=90, anchor="center")
+        self.ledger_tree.column("ref_no", width=120, anchor="center")
+        self.ledger_tree.column("desc", width=300)
+        self.ledger_tree.column("debit", width=120, anchor="e")
+        self.ledger_tree.column("credit", width=120, anchor="e")
+        self.ledger_tree.column("balance", width=140, anchor="e")
+
+        sb_ledger = ttk.Scrollbar(ledger_frame, orient="vertical", command=self.ledger_tree.yview)
+        self.ledger_tree.configure(yscrollcommand=sb_ledger.set)
+        sb_ledger.pack(side="right", fill="y")
+        self.ledger_tree.pack(fill="both", expand=True, padx=4, pady=(0, 4))
+
+        # Sub-Tab 3: Bagan Akun COA
         coa_frame = tk.Frame(sub_nb, bg=self.colors["bg"])
         sub_nb.add(coa_frame, text="📑 Bagan Akun Terstandarisasi (COA)")
 
@@ -1664,6 +1731,144 @@ class GoorameApp(tk.Tk):
                     c.get("description") or "-",
                 ),
             )
+
+    def _update_ledger_data(self, coas, journals):
+        """Hitung mutasi Buku Besar (General Ledger) untuk setiap akun COA dari jurnal berurutan."""
+        sorted_journals = sorted(journals or [], key=lambda j: j.get("date", ""))
+        self.ledger_cache = {}
+
+        for c in (coas or []):
+            code = str(c.get("code"))
+            norm = c.get("normal_balance", "DEBIT").upper()
+            bal = 0.0
+            entries = []
+
+            for j in sorted_journals:
+                j_date = j.get("date", "")
+                j_no = j.get("entry_number", "")
+                j_desc = j.get("description", "")
+
+                for it in j.get("items", []):
+                    if str(it.get("account_code")) == code:
+                        deb = float(it.get("debit", 0.0))
+                        cre = float(it.get("credit", 0.0))
+
+                        if norm == "DEBIT":
+                            bal += deb - cre
+                        else:
+                            bal += cre - deb
+
+                        entries.append({
+                            "date": j_date,
+                            "ref_no": j_no,
+                            "desc": j_desc,
+                            "debit": deb,
+                            "credit": cre,
+                            "balance": bal,
+                        })
+
+            self.ledger_cache[code] = {
+                "code": code,
+                "name": c.get("name"),
+                "category": c.get("category"),
+                "normal_balance": norm,
+                "entries": entries,
+                "closing_balance": bal,
+            }
+
+        # Perbarui pilihan dropdown akun
+        cb_values = []
+        for code, l in sorted(self.ledger_cache.items()):
+            count = len(l["entries"])
+            cb_values.append(f"[{code}] {l['name']} ({l['category']}) - {count} mutasi")
+
+        self.cb_ledger_account["values"] = cb_values
+
+        # Pilih otomatis akun pertama yang memiliki transaksi mutasi
+        cur_idx = self.cb_ledger_account.current()
+        if cur_idx < 0 and cb_values:
+            fav_idx = 0
+            for idx, (code, l) in enumerate(sorted(self.ledger_cache.items())):
+                if len(l["entries"]) > 0:
+                    fav_idx = idx
+                    break
+            self.cb_ledger_account.current(fav_idx)
+            self._on_ledger_account_selected()
+        elif cur_idx >= 0 and cur_idx < len(cb_values):
+            self._on_ledger_account_selected()
+
+    def _on_ledger_account_selected(self, event=None):
+        """Tampilkan rincian mutasi akun terpilih di Buku Besar."""
+        idx = self.cb_ledger_account.current()
+        if idx < 0:
+            return
+
+        sorted_codes = sorted(getattr(self, "ledger_cache", {}).keys())
+        if idx >= len(sorted_codes):
+            return
+
+        sel_code = sorted_codes[idx]
+        acc_ledger = self.ledger_cache.get(sel_code)
+        if not acc_ledger:
+            return
+
+        # Update info badges
+        self.lbl_ledger_title.config(
+            text=f"Buku Besar [{acc_ledger['code']}] {acc_ledger['name']} ({acc_ledger['category']})"
+        )
+        self.lbl_ledger_normal.config(
+            text=f"Saldo Normal: {acc_ledger['normal_balance']}"
+        )
+        self.lbl_ledger_balance.config(
+            text=f"Saldo Akhir: {format_rupiah(acc_ledger['closing_balance'])}",
+            fg=self.colors["primary"] if acc_ledger['closing_balance'] >= 0 else self.colors["danger"]
+        )
+
+        # Clear & isi tabel mutasi
+        for item in self.ledger_tree.get_children():
+            self.ledger_tree.delete(item)
+
+        entries = acc_ledger.get("entries", [])
+        if not entries:
+            self.ledger_tree.insert(
+                "",
+                "end",
+                values=("-", "-", "Belum ada transaksi mutasi untuk akun ini", "-", "-", format_rupiah(0))
+            )
+        else:
+            for e in entries:
+                deb = e.get("debit", 0.0)
+                cre = e.get("credit", 0.0)
+                bal = e.get("balance", 0.0)
+                self.ledger_tree.insert(
+                    "",
+                    "end",
+                    values=(
+                        e.get("date"),
+                        e.get("ref_no"),
+                        e.get("desc"),
+                        format_rupiah(deb) if deb > 0 else "-",
+                        format_rupiah(cre) if cre > 0 else "-",
+                        format_rupiah(bal),
+                    )
+                )
+
+    def export_current_ledger_csv(self):
+        """Ekspor mutasi Buku Besar akun terpilih ke file CSV."""
+        idx = self.cb_ledger_account.current()
+        if idx < 0:
+            messagebox.showwarning("Peringatan", "Pilih akun buku besar terlebih dahulu.")
+            return
+
+        sorted_codes = sorted(getattr(self, "ledger_cache", {}).keys())
+        if idx >= len(sorted_codes):
+            return
+
+        sel_code = sorted_codes[idx]
+        acc = self.ledger_cache.get(sel_code, {})
+        clean_name = (acc.get("name") or "akun").replace(" ", "_").replace("/", "_")
+        default_file = f"buku_besar_{sel_code}_{clean_name}.csv"
+        self.export_treeview_to_csv(self.ledger_tree, default_file)
 
     def do_sync_coa_standard(self):
         try:
