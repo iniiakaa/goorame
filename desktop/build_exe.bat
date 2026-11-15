@@ -2,6 +2,7 @@
 title Membangun Goorame Desktop Windows (.exe)
 echo =======================================================
 echo    Membangun Executable Windows (Goorame Desktop)
+echo    Dilengkapi Logo Resmi & Terkoneksi ke Railway
 echo =======================================================
 echo.
 
@@ -14,12 +15,16 @@ if not exist "backend\venv\Scripts\python.exe" (
     exit /b 1
 )
 
-echo Menginstal dependencies PyInstaller & Requests...
-backend\venv\Scripts\python.exe -m pip install requests pyinstaller
+echo Menginstal dependencies PyInstaller, Requests & Pillow...
+backend\venv\Scripts\python.exe -m pip install requests pyinstaller pillow
 
 echo.
-echo Menjalankan PyInstaller...
-backend\venv\Scripts\pyinstaller.exe --noconfirm --onedir --windowed --name "Goorame-Desktop" desktop\app.py
+echo Menjalankan PyInstaller dengan Logo Resmi Goorame...
+backend\venv\Scripts\pyinstaller.exe --noconfirm --onedir --windowed ^
+    --name "Goorame-Desktop" ^
+    --icon "public\favicon.ico" ^
+    --add-data "public;public" ^
+    desktop\app.py
 
 echo.
 echo =======================================================
