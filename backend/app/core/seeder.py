@@ -42,8 +42,27 @@ DEFAULT_COA = [
     {"code": "6190", "name": "Beban Operasional Lain-lain", "category": "BEBAN", "normal_balance": "DEBIT", "description": "Pengeluaran operasional umum lainnya"},
 ]
 
+DISPLAY_NAMES = {"PEMILIK": "Pemilik", "PEKERJA": "Pekerja"}
+
+def migrate_user_display_names(db: Session):
+    """Rename legacy full_name values (H. Slamet, Pak Budi, etc.) to clean role-based names."""
+    users = db.query(User).all()
+    changed = 0
+    for u in users:
+        expected = DISPLAY_NAMES.get(u.role)
+        if expected and u.full_name != expected:
+            u.full_name = expected
+            changed += 1
+    if changed:
+        db.commit()
+    return changed
+
+
 def seed_database(db: Session):
     """Populates empty tables with default master and initial operational data."""
+
+    # 0. Migrate legacy display names on every startup
+    migrate_user_display_names(db)
 
     # 1. Seed COA
     if db.query(ChartOfAccount).count() == 0:
