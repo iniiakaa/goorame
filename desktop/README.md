@@ -74,5 +74,6 @@ backend\venv\Scripts\python.exe desktop\app.py
 
 1. Buka folder `desktop/` di Windows Explorer.
 2. Klik 2x file **`build_exe.bat`**.
-3. File `.exe` siap pakai beserta logo dan seluruh aset akan berada di:
-   👉 **`dist/Goorame-Desktop/Goorame-Desktop.exe`**
+3. Hasil build akan menyediakan 2 pilihan di folder `dist/`:
+   - 👉 **Pilihan 1 (Direkomendasikan)**: `dist/Goorame-Desktop-Standalone.exe` (1 file tunggal mandiri ~29 MB, cukup kirim file ini saja ke PC lain tanpa folder tambahan).
+   - 👉 **Pilihan 2**: `dist/Goorame-Desktop/` (versi folder, wajib di-ZIP seluruh foldernya bersama sub-folder `_internal/` jika ingin dikirim ke PC lain).
