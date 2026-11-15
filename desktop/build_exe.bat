@@ -8,11 +8,17 @@ echo.
 
 cd /d "%~dp0\.."
 
-echo Memeriksa virtual environment...
+echo Memeriksa virtual environment Python...
 if not exist "backend\venv\Scripts\python.exe" (
-    echo [ERROR] Virtual environment backend tidak ditemukan!
-    pause
-    exit /b 1
+    echo [INFO] Virtual environment belum ditemukan.
+    echo Membuat virtual environment backend\venv secara otomatis...
+    python -m venv backend\venv
+    if errorlevel 1 (
+        echo [ERROR] Gagal membuat virtual environment!
+        echo Pastikan Python sudah terinstal di komputer Anda dan dicentang 'Add to PATH'.
+        pause
+        exit /b 1
+    )
 )
 
 echo Menginstal dependencies PyInstaller, Requests & Pillow...
