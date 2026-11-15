@@ -5,7 +5,10 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 # Default API URL (Railway Backend or Localhost)
-DEFAULT_API_URL = os.environ.get("GOORAME_API_URL", "http://127.0.0.1:8000/api")
+DEFAULT_API_URL = os.environ.get(
+    "GOORAME_API_URL", 
+    "https://vivacious-cat-production-1b1669c9.up.railway.app/api"
+)
 
 try:
     import requests
@@ -247,7 +250,8 @@ class GoorameDesktopApp(tk.Tk):
         btn_logout = tk.Button(topbar, text="Keluar", font=("Segoe UI", 8, "bold"), bg=self.colors["card"], fg=self.colors["danger"], relief="flat", cursor="hand2", command=self.show_login_screen)
         btn_logout.pack(side="right", padx=(8, 0), pady=12, ipady=3, ipadx=8)
 
-        user_role_tag = f"[{user.get('role', 'PEMILIK')}] {user.get('full_name', 'User')}"
+        role_display = "Pemilik" if user.get("role") == "PEMILIK" else "Pekerja"
+        user_role_tag = f"[{user.get('role', 'PEMILIK')}] {role_display}"
         tk.Label(topbar, text=user_role_tag, font=("Segoe UI", 9, "bold"), bg=self.colors["panel"], fg=self.colors["primary"]).pack(side="right", pady=12)
 
         # Main Body: Notebook Tabs
