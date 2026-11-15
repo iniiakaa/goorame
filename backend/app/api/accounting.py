@@ -20,6 +20,26 @@ router = APIRouter(prefix="/accounting", tags=["Akuntansi & Pembukuan"])
 def get_chart_of_accounts(db: Session = Depends(get_db)):
     return db.query(ChartOfAccount).order_by(ChartOfAccount.code).all()
 
+@router.post("/coa/sync-standard")
+def sync_standard_coa(db: Session = Depends(get_db)):
+    """Menyinkronkan daftar akun standar 1110-6190 ke database jika belum ada."""
+    from app.core.seeder import DEFAULT_COA
+    added_count = 0
+    updated_count = 0
+    for item in DEFAULT_COA:
+        acc = db.query(ChartOfAccount).filter(ChartOfAccount.code == item["code"]).first()
+        if not acc:
+            db.add(ChartOfAccount(**item))
+            added_count += 1
+        else:
+            acc.name = item["name"]
+            acc.category = item["category"]
+            acc.normal_balance = item["normal_balance"]
+            acc.description = item.get("description")
+            updated_count += 1
+    db.commit()
+    return {"message": "Sinkronisasi COA berhasil", "added": added_count, "updated": updated_count}
+
 @router.post("/coa", response_model=COAResponse)
 def create_chart_of_account(payload: COACreate, db: Session = Depends(get_db)):
     existing = db.query(ChartOfAccount).filter(ChartOfAccount.code == payload.code).first()
